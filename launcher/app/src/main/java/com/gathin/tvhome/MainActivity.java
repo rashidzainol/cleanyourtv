@@ -194,8 +194,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView shamsiDate;
     /** lunar_date: the lunisolar date under the date line, and the time zone it is computed for. */
     private TextView lunarDate;
-    /** This fork: the waktu solat line under the clock (config.xml show_esolat), and its zone. */
-    private TextView esolatTimes;
+    /** This fork: the waktu solat lines under the clock (config.xml show_esolat), and its zone. */
+    private TextView esolatNext;
+    private TextView esolatAll;
     private boolean esolat;
     private String esolatZone;
     private boolean lunar;
@@ -594,10 +595,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         lunar = cfg.lunarDate;
         lunarOffset = Lunar.offsetFor(cfg.lunarUtcOffset, Locale.getDefault());
         if (lunar) lunarDate.setVisibility(View.VISIBLE);
-        esolatTimes = findViewById(R.id.esolatTimes);
+        esolatNext = findViewById(R.id.esolatNext);
+        esolatAll = findViewById(R.id.esolatAll);
         esolat = getResources().getBoolean(R.bool.show_esolat);
         esolatZone = getResources().getString(R.string.esolat_zone);
-        if (esolat) esolatTimes.setVisibility(View.VISIBLE);
+        if (esolat) {
+            esolatNext.setVisibility(View.VISIBLE);
+            esolatAll.setVisibility(View.VISIBLE);
+        }
         greetingName = cfg.greetingName;
         if (cfg.dateBelowClock) moveDateBelowClock();
         if (cfg.dateBelowClock && cfg.iconOnlyButtons && !cfg.topMenu
@@ -2772,8 +2777,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (lunar) lunarDate.setText(Lunar.today(getResources(), lunarOffset));
         // This fork: waktu solat under the clock, kept with the minute tick.
         if (esolat) {
-            String s = EsolatTimes.today(this, esolatZone);
-            if (!s.isEmpty()) esolatTimes.setText(s);
+            String[] times = EsolatTimes.times(this, esolatZone);
+            String next = EsolatTimes.nextLine(times);
+            String all = EsolatTimes.allLine(times);
+            if (!next.isEmpty()) esolatNext.setText(next);
+            if (!all.isEmpty()) esolatAll.setText(all);
         }
     }
 

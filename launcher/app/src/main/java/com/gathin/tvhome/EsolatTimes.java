@@ -42,9 +42,39 @@ final class EsolatTimes {
         return String.format(Locale.US, "%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
     }
 
-    /** Today's line for the zone, from the network when fresh, otherwise the cache. */
-    static String today(Context ctx, String mpt) {
-        String[] times = load(ctx, mpt);
+    /** Today's six "HH:mm" strings in NAMES order, or null if nothing is cached yet. */
+    static String[] times(Context ctx, String mpt) {
+        return load(ctx, mpt);
+    }
+
+    /** The index (0-5, Syuruk skipped) of the next prayer today, or -1 when the day's prayers are done. */
+    static int nextIndex(String[] times) {
+        if (times == null) return -1;
+        Calendar now = malaysia();
+        int nowMin = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+        for (int i = 0; i < PRAYERS; i++) {
+            if (i == 1) continue; // Syuruk is shown but is not a prayer
+            int m = Integer.parseInt(times[i].substring(0, 2)) * 60 + Integer.parseInt(times[i].substring(3, 5));
+            if (m > nowMin) return i;
+        }
+        return -1;
+    }
+
+    /** "Asar · 16:21 · 3 h 17 min" — the next prayer, its time and how long until it. Empty when the day is done. */
+    static String nextLine(String[] times) {
+        if (times == null) return "";
+        int idx = nextIndex(times);
+        if (idx < 0) return "";
+        Calendar now = malaysia();
+        int nowMin = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+        int m = Integer.parseInt(times[idx].substring(0, 2)) * 60 + Integer.parseInt(times[idx].substring(3, 5));
+        int left = m - nowMin;
+        String remain = (left >= 60 ? left / 60 + " h " : "") + left % 60 + " min";
+        return NAMES[idx] + " · " + times[idx] + " · " + remain;
+    }
+
+    /** "Subuh 05:48 · Syuruk 06:56 · ..." — every time of the day. */
+    static String allLine(String[] times) {
         if (times == null) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < PRAYERS; i++) {

@@ -298,19 +298,33 @@
                             android:textAllCaps="true"
                             android:visibility="gone" />
 
-                        <!-- This fork: waktu solat for the zone in config.xml, when show_esolat is on. -->
+                        <!-- This fork: the next prayer ("Asar · 16:21 · 3 h 17 min") and then every time. -->
                         <TextView
-                            android:id="@+id/esolatTimes"
+                            android:id="@+id/esolatNext"
                             android:gravity="left"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="6dp"
                             android:singleLine="true"
                             android:ellipsize="end"
+                            android:textColor="#E6FFFFFF"
+                            android:textSize="16sp"
+                            android:fontFamily="@string/font_medium"
+                            android:letterSpacing="0.04"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/esolatAll"
+                            android:gravity="left"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:maxLines="2"
+                            android:lineSpacingExtra="2dp"
                             android:textColor="#80FFFFFF"
                             android:textSize="12sp"
                             android:fontFamily="@string/font_regular"
-                            android:letterSpacing="0.08"
+                            android:letterSpacing="0.06"
                             android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
