@@ -297,35 +297,6 @@
                             android:letterSpacing="0.14"
                             android:textAllCaps="true"
                             android:visibility="gone" />
-
-                        <!-- This fork: the next prayer ("Asar · 16:21 · 3 h 17 min") and then every time. -->
-                        <TextView
-                            android:id="@+id/esolatNext"
-                            android:gravity="left"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:singleLine="true"
-                            android:ellipsize="end"
-                            android:textColor="#E6FFFFFF"
-                            android:textSize="16sp"
-                            android:fontFamily="@string/font_medium"
-                            android:letterSpacing="0.04"
-                            android:visibility="gone" />
-
-                        <TextView
-                            android:id="@+id/esolatAll"
-                            android:gravity="left"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:maxLines="2"
-                            android:lineSpacingExtra="2dp"
-                            android:textColor="#80FFFFFF"
-                            android:textSize="12sp"
-                            android:fontFamily="@string/font_regular"
-                            android:letterSpacing="0.06"
-                            android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -409,6 +380,44 @@
                     android:nextFocusDown="@+id/grid" />
             </LinearLayout>
         </RelativeLayout>
+
+        <!-- This fork: the waktu solat hero under the clock, when show_esolat is on. -->
+        <LinearLayout
+            android:id="@+id/esolatHero"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginEnd="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/hero_card_bg"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/esolatNextBig"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#FFFFFFFF"
+                android:textSize="28sp"
+                android:fontFamily="@string/font_light"
+                android:letterSpacing="-0.02"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/esolatAllBig"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:maxLines="2"
+                android:lineSpacingExtra="4dp"
+                android:textColor="#B3FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="@string/font_regular"
+                android:letterSpacing="0.04" />
+        </LinearLayout>
 
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
         <FrameLayout

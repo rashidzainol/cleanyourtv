@@ -194,9 +194,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView shamsiDate;
     /** lunar_date: the lunisolar date under the date line, and the time zone it is computed for. */
     private TextView lunarDate;
-    /** This fork: the waktu solat lines under the clock (config.xml show_esolat), and its zone. */
-    private TextView esolatNext;
-    private TextView esolatAll;
+    /** This fork: the waktu solat hero under the clock (config.xml show_esolat), and its zone. */
+    private View esolatHero;
+    private TextView esolatNextBig;
+    private TextView esolatAllBig;
     private boolean esolat;
     private String esolatZone;
     private boolean lunar;
@@ -595,14 +596,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         lunar = cfg.lunarDate;
         lunarOffset = Lunar.offsetFor(cfg.lunarUtcOffset, Locale.getDefault());
         if (lunar) lunarDate.setVisibility(View.VISIBLE);
-        esolatNext = findViewById(R.id.esolatNext);
-        esolatAll = findViewById(R.id.esolatAll);
+        esolatHero = findViewById(R.id.esolatHero);
+        esolatNextBig = findViewById(R.id.esolatNextBig);
+        esolatAllBig = findViewById(R.id.esolatAllBig);
         esolat = getResources().getBoolean(R.bool.show_esolat);
         esolatZone = readEsolatZone();
-        if (esolat) {
-            esolatNext.setVisibility(View.VISIBLE);
-            esolatAll.setVisibility(View.VISIBLE);
-        }
+        if (esolat) esolatHero.setVisibility(View.VISIBLE);
         greetingName = cfg.greetingName;
         if (cfg.dateBelowClock) moveDateBelowClock();
         if (cfg.dateBelowClock && cfg.iconOnlyButtons && !cfg.topMenu
@@ -2780,8 +2779,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             String[] times = EsolatTimes.times(this, esolatZone);
             String next = EsolatTimes.nextLine(times);
             String all = EsolatTimes.allLine(times);
-            if (!next.isEmpty()) esolatNext.setText(next);
-            if (!all.isEmpty()) esolatAll.setText(all);
+            if (!next.isEmpty()) esolatNextBig.setText(next);
+            if (!all.isEmpty()) esolatAllBig.setText(all);
         }
     }
 
