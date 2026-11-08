@@ -263,7 +263,7 @@
     <!-- This fork: waktu solat under the clock, from MPT's JAKIM data (mpt.i906.my), cached so the line
          survives offline. The zone is an MPT code (WLY01 = wlp-0, SGR01 = sgr-1, JHR02 = jhr-2, ...). -->
     <bool name="show_esolat">true</bool>
-    <string name="esolat_zone" translatable="false">wlp-0</string>
+    <string name="esolat_zone" translatable="false">swk-0</string>
     <!-- The date (with the Shamsi and lunar lines) on its own line under the clock instead of beside it, for a top bar
          whose pills leave the date too little room. Can also be set with "date_below_clock" in a theme. -->
     <bool name="date_below_clock">false</bool>

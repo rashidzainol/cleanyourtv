@@ -598,7 +598,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         esolatNext = findViewById(R.id.esolatNext);
         esolatAll = findViewById(R.id.esolatAll);
         esolat = getResources().getBoolean(R.bool.show_esolat);
-        esolatZone = getResources().getString(R.string.esolat_zone);
+        esolatZone = readEsolatZone();
         if (esolat) {
             esolatNext.setVisibility(View.VISIBLE);
             esolatAll.setVisibility(View.VISIBLE);
@@ -2783,6 +2783,28 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (!next.isEmpty()) esolatNext.setText(next);
             if (!all.isEmpty()) esolatAll.setText(all);
         }
+    }
+
+    /** This fork: the zone for the solat card, from the Esolat JAKIM add-on if it is installed. */
+    private String readEsolatZone() {
+        try {
+            java.io.File f = new java.io.File(
+                    android.os.Environment.getExternalStorageDirectory(),
+                    "Android/data/my.tv.esolat/files/esolat_zone.txt");
+            if (f.isFile()) {
+                byte[] buf = new byte[(int) f.length()];
+                try (java.io.FileInputStream in = new java.io.FileInputStream(f)) {
+                    int n = in.read(buf);
+                    if (n > 0) {
+                        String s = new String(buf, 0, n, "UTF-8").trim();
+                        if (!s.isEmpty()) return s;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // The add-on is not installed or its zone has not been saved yet: use the default.
+        }
+        return getResources().getString(R.string.esolat_zone);
     }
 
     // ---- race-weekend panel (a theme's race_calendar) -----------------------------------------------

@@ -30,4 +30,10 @@
     <string name="settings_off">Tidak aktif</string>
     <string name="settings_hint">Pilih dengan pad arah. Tekan butang melihat masa solat.</string>
     <string name="settings_saved">Zon disimpan: %1$s (%2$s)</string>
+    <string name="settings_auto">Lokasi automatik</string>
+    <string name="settings_auto_hint">Cari zon dari lokasi internet (IP)</string>
+    <string name="settings_detecting">Mengesan lokasi…</string>
+    <string name="settings_detected">Zon dikesan: %1$s (%2$s)</string>
+    <string name="settings_detect_failed">Tidak dapat mengesan lokasi</string>
+    <string name="settings_detect_off">Tiada internet untuk kesan lokasi</string>
 </resources>
