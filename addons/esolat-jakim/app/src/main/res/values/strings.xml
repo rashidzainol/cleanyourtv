@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Esolat JAKIM</string>
+    <string name="card_caption">Waktu solat</string>
+
+    <string name="prayer_fajr">Subuh</string>
+    <string name="prayer_sunrise">Syuruk</string>
+    <string name="prayer_dhuhr">Zohor</string>
+    <string name="prayer_asr">Asar</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isyak</string>
+
+    <string name="prayer_in">%1$s dalam %2$s</string>
+    <string name="prayer_tomorrow">%1$s esok</string>
+    <string name="prayer_alert_badge">MASA SOLAT</string>
+    <string name="prayer_alert_title">Masa solat: %1$s</string>
+    <string name="prayer_alert_dismiss">%1$ds</string>
+    <string name="notification_title">Masa solat: %1$s</string>
+    <string name="notification_body">Sudah masuk waktu %1$s (%2$s) bagi %3$s</string>
+    <string name="reminders_active">Peringatan aktif</string>
+    <string name="updated_at">dikemas kini %1$s</string>
+    <string name="loading">Memuatkan…</string>
+    <string name="offline">Tidak dapat menghubungi pelayan. Kali terakhir ditunjukkan.</string>
+    <string name="unexpected_error">Ralat tidak dijangka.</string>
+
+    <string name="settings_title">TETAPAN</string>
+    <string name="settings_zone">Zon</string>
+    <string name="settings_reminders">Peringatan azan</string>
+    <string name="settings_on">Aktif</string>
+    <string name="settings_off">Tidak aktif</string>
+    <string name="settings_hint">Pilih dengan pad arah. Tekan butang melihat masa solat.</string>
+    <string name="settings_saved">Zon disimpan: %1$s (%2$s)</string>
+</resources>
