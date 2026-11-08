@@ -36,4 +36,12 @@
     <string name="settings_detected">Zon dikesan: %1$s (%2$s)</string>
     <string name="settings_detect_failed">Tidak dapat mengesan lokasi</string>
     <string name="settings_detect_off">Tiada internet untuk kesan lokasi</string>
+    <string name="settings_manual">Lokasi manual</string>
+    <string name="settings_manual_hint">Pilih negeri kemudian zon</string>
+    <string name="settings_back">Kembali</string>
+    <string name="settings_save">Simpan</string>
+    <string name="settings_remind_before">Peringat sebelum</string>
+    <string name="settings_notify">Notifikasi</string>
+    <string name="settings_copyright">Copyright Rashid Zainol</string>
+    <string name="settings_copyright_hint">github.com/rashidzainol</string>
 </resources>

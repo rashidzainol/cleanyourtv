@@ -46,15 +46,24 @@ public final class Reminder {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
 
+        String notifyType = Prefs.reminderNotify(ctx);
+        boolean sound = "sound".equals(notifyType);
+        boolean vibrate = "vibrate".equals(notifyType) || sound;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
                     CHANNEL_ID, ctx.getString(R.string.app_name), NotificationManager.IMPORTANCE_HIGH);
-            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            AudioAttributes audio = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
-                    .build();
-            ch.setSound(soundUri, audio);
+            if (sound) {
+                Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                AudioAttributes audio = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
+                        .build();
+                ch.setSound(soundUri, audio);
+            } else {
+                ch.setSound(null, null);
+            }
+            ch.enableVibration(vibrate);
             ch.enableLights(true);
             ch.setLightColor(ACCENT);
             nm.createNotificationChannel(ch);
@@ -76,6 +85,12 @@ public final class Reminder {
                 .setPriority(Notification.PRIORITY_MAX)
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setColor(ACCENT);
+        if (!sound && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            nb.setSound(null);
+        }
+        if (vibrate && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            nb.setVibrate(new long[]{0, 250, 250, 250});
+        }
         nm.notify(NOTIFICATION_ID, nb.build());
     }
 }

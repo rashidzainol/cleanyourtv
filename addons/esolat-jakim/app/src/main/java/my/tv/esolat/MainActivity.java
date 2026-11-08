@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
     private Typeface font;
     private int accent;
     private TextView place, next, dates, status;
+    private TextView settingsBtn;
     private LinearLayout rows;
     /** Today's times as "HH:mm", in NAME_RES order; null until loaded. */
     private String[] times;
@@ -77,26 +78,44 @@ public class MainActivity extends Activity {
         col.setPadding(dp(80), dp(48), dp(80), dp(40));
         root.addView(col, new FrameLayout.LayoutParams(-1, -1));
 
-        place = text(18, 400, 0xB3FFFFFF);
+        place = text(16, 400, 0xB3FFFFFF);
         place.setLetterSpacing(0.25f);
         col.addView(place);
 
-        next = text(52, 300, 0xFFFFFFFF);
-        next.setPadding(0, dp(10), 0, dp(4));
+        next = text(44, 300, 0xFFFFFFFF);
+        next.setPadding(0, dp(8), 0, dp(2));
         col.addView(next);
-        dates = text(20, 400, 0xB3FFFFFF);
+        dates = text(18, 400, 0xB3FFFFFF);
         col.addView(dates);
 
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(-1, 0, 1f);
-        rlp.setMargins(0, dp(36), 0, 0);
+        rlp.setMargins(0, dp(24), 0, 0);
         col.addView(rows, rlp);
 
-        status = text(16, 400, 0x80FFFFFF);
-        status.setPadding(0, dp(18), 0, 0);
+        status = text(14, 400, 0x80FFFFFF);
+        status.setPadding(0, dp(14), 0, 0);
         status.setText(getString(R.string.loading));
         col.addView(status);
+
+        // Settings button at the bottom
+        settingsBtn = new TextView(this);
+        settingsBtn.setText(getString(R.string.settings_title));
+        settingsBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        settingsBtn.setTextColor(0xB3FFFFFF);
+        settingsBtn.setTypeface(Build.VERSION.SDK_INT >= 28 ? Typeface.create(font, 500, false) : font);
+        settingsBtn.setGravity(Gravity.CENTER);
+        settingsBtn.setPadding(dp(24), dp(12), dp(24), dp(12));
+        GradientDrawable btnBg = new GradientDrawable();
+        btnBg.setCornerRadius(dp(10));
+        btnBg.setColor(0x14FFFFFF);
+        settingsBtn.setBackground(btnBg);
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(-2, -2);
+        blp.setMargins(0, dp(16), 0, 0);
+        blp.gravity = Gravity.CENTER_HORIZONTAL;
+        col.addView(settingsBtn, blp);
+        settingsBtn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
 
         setContentView(root);
     }
@@ -196,9 +215,9 @@ public class MainActivity extends Activity {
             LinearLayout card = new LinearLayout(this);
             card.setOrientation(LinearLayout.VERTICAL);
             card.setGravity(Gravity.CENTER);
-            card.setPadding(dp(6), dp(20), dp(6), dp(20));
+            card.setPadding(dp(6), dp(14), dp(6), dp(14));
             GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(dp(22));
+            bg.setCornerRadius(dp(16));
             bg.setColor(hl ? accent : 0x14FFFFFF);
             card.setBackground(bg);
             int dim = i == 1 ? 0x80FFFFFF : 0xFFFFFFFF;
@@ -206,22 +225,22 @@ public class MainActivity extends Activity {
             ImageView icon = new ImageView(this);
             icon.setImageResource(ICONS[i]);
             icon.setImageTintList(ColorStateList.valueOf(hl ? 0xFFFFFFFF : (i == 1 ? 0x80FFFFFF : accent)));
-            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(dp(44), dp(44));
-            ilp.bottomMargin = dp(22);
+            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(dp(36), dp(36));
+            ilp.bottomMargin = dp(16);
             card.addView(icon, ilp);
-            TextView ar = centered(text(26, 400, fg));
+            TextView ar = centered(text(22, 400, fg));
             ar.setText(ARABIC[i]);
             card.addView(ar);
-            TextView name = centered(text(20, 500, hl ? 0xE6FFFFFF : (i == 1 ? 0x80FFFFFF : 0xB3FFFFFF)));
+            TextView name = centered(text(18, 500, hl ? 0xE6FFFFFF : (i == 1 ? 0x80FFFFFF : 0xB3FFFFFF)));
             name.setText(getString(NAME_RES[i]));
-            name.setPadding(0, dp(8), 0, dp(20));
+            name.setPadding(0, dp(6), 0, dp(14));
             card.addView(name);
-            TextView time = centered(text(42, hl ? 500 : 300, fg));
+            TextView time = centered(text(36, hl ? 500 : 300, fg));
             time.setText(times[i]);
             // Shrink rather than cut "05:10" when the card is narrow.
             time.setMaxLines(1);
-            time.setAutoSizeTextTypeUniformWithConfiguration(20, 42, 1, TypedValue.COMPLEX_UNIT_SP);
-            card.addView(time, new LinearLayout.LayoutParams(-1, dp(52)));
+            time.setAutoSizeTextTypeUniformWithConfiguration(18, 36, 1, TypedValue.COMPLEX_UNIT_SP);
+            card.addView(time, new LinearLayout.LayoutParams(-1, dp(44)));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1f);
             lp.setMargins(i == 0 ? 0 : dp(8), 0, i == Api.PRAYERS - 1 ? 0 : dp(8), 0);
             rows.addView(card, lp);

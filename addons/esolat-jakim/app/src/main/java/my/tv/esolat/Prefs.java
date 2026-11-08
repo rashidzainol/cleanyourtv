@@ -30,6 +30,24 @@ public final class Prefs {
         prefs(ctx).edit().putBoolean(KEY_REMINDERS, on).apply();
     }
 
+    /** Minutes before the prayer the reminder fires: 0 to 60, in steps of five. */
+    public static int reminderMinutes(Context ctx) {
+        return prefs(ctx).getInt("reminder_minutes", 0);
+    }
+
+    public static void setReminderMinutes(Context ctx, int minutes) {
+        prefs(ctx).edit().putInt("reminder_minutes", minutes).apply();
+    }
+
+    /** The reminder's sound: "sound", "vibrate" or "silent". */
+    public static String reminderNotify(Context ctx) {
+        return prefs(ctx).getString("reminder_notify", "sound");
+    }
+
+    public static void setReminderNotify(Context ctx, String notify) {
+        prefs(ctx).edit().putString("reminder_notify", notify).apply();
+    }
+
     private Prefs() {
     }
 }

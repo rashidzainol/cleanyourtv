@@ -23,6 +23,7 @@ public final class Scheduler {
     public static final String EXTRA_NAME = "prayer_name";
     public static final String EXTRA_TIME = "prayer_time";
     public static final String EXTRA_PLACE = "place";
+    public static final String EXTRA_MINUTES = "minutes_before";
 
     private static final String[] NAMES = {"Subuh", "Syuruk", "Zohor", "Asar", "Maghrib", "Isyak"};
 
@@ -77,14 +78,23 @@ public final class Scheduler {
                     scheduleRefresh(ctx, nextRefreshAt(now));
                     return;
                 }
+                // The reminder can be set to fire minutes before the prayer itself.
+                int minutes = Prefs.reminderMinutes(ctx);
+                long fireAt = next - minutes * 60L;
+                if (fireAt <= nowSec) {
+                    // The pre-reminder is already past; the prayer is what is still to come.
+                    fireAt = next;
+                }
                 String time = clockOf(next);
-                Log.i(TAG, "Scheduling " + NAMES[nextIdx] + " " + time);
+                Log.i(TAG, "Scheduling " + NAMES[nextIdx] + " " + time
+                        + (minutes > 0 ? " (" + minutes + " min before)" : ""));
                 Intent it = new Intent(ctx, EsolatReceiver.class);
                 it.setAction(ACTION_PRAYER);
                 it.putExtra(EXTRA_NAME, NAMES[nextIdx]);
                 it.putExtra(EXTRA_TIME, time);
                 it.putExtra(EXTRA_PLACE, m.place);
-                setAlarm(ctx, next * 1000L, it, 1001);
+                it.putExtra(EXTRA_MINUTES, minutes);
+                setAlarm(ctx, fireAt * 1000L, it, 1001);
             } catch (Exception e) {
                 Log.w(TAG, "scheduleNext: " + e);
                 scheduleRefresh(ctx, nextRefreshAt(malaysia()));

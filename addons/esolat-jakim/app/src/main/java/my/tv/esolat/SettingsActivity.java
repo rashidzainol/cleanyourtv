@@ -1,6 +1,7 @@
 package my.tv.esolat;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
@@ -24,44 +25,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The on-TV settings: lokasi automatik (from the TV's internet), or pick negeri then zon by hand,
- * and turn the azan reminder on or off. Everything works from the D-pad: Up/Down move, OK selects,
- * Back returns to the times.
+ * The on-TV settings: four rows — Lokasi automatik, Manual location, Peringatan azan, and the
+ * copyright line. Everything works from the D-pad: Up/Down move, OK selects, Back returns.
  */
 public class SettingsActivity extends Activity {
     private static final String TAG = "EsolatSettings";
     private static final int ROW_AUTO = 0;
-    private static final int ROW_STATE = 1;
-    private static final int ROW_ZONE = 2;
-    private static final int ROW_REMINDERS = 3;
-    private static final int ROW_FIRST_ZONE = 4;
+    private static final int ROW_MANUAL = 1;
+    private static final int ROW_REMINDERS = 2;
+    private static final int ROW_COPYRIGHT = 3;
 
     private Typeface font;
     private int accent;
     private LinearLayout list;
     private int selected = ROW_AUTO;
+    private TextView toast;
+
+    // Manual-location sub-screen
+    private boolean manualOpen;
     private int stateIdx = 0;
     private int zoneIdx = 0;
     private final List<Zones.Zone> stateZones = new ArrayList<>();
-    private TextView savedToast;
-    private boolean detecting;
+
+    // Reminders sub-screen
+    private boolean remindersOpen;
+    private boolean remOn = true;
+    private int remMinutes = 0;
+    private String remNotify = "sound";
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         font = getResources().getFont(R.font.outfit);
         accent = getColor(R.color.accent);
-
-        // Where we start: the state and zone already chosen.
-        String current = Prefs.mpt(this);
-        for (int s = 0; s < Zones.STATES.length; s++) {
-            for (Zones.Zone z : Zones.ZONES) {
-                if (z.state.equals(Zones.STATES[s]) && z.mpt.equals(current)) {
-                    stateIdx = s;
-                }
-            }
-        }
-        loadZones();
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(0xFF050607);
@@ -85,9 +81,9 @@ public class SettingsActivity extends Activity {
         slp.topMargin = dp(20);
         col.addView(scroll, slp);
 
-        savedToast = text(15, 400, accent);
-        savedToast.setPadding(0, dp(10), 0, 0);
-        col.addView(savedToast);
+        toast = text(15, 400, accent);
+        toast.setPadding(0, dp(10), 0, 0);
+        col.addView(toast);
 
         TextView hint = text(13, 400, 0x59FFFFFF);
         hint.setPadding(0, dp(8), 0, 0);
@@ -111,6 +107,81 @@ public class SettingsActivity extends Activity {
         return Math.round(v * getResources().getDisplayMetrics().density);
     }
 
+    private void rebuild() {
+        list.removeAllViews();
+        if (manualOpen) {
+            rebuildManual();
+            return;
+        }
+        if (remindersOpen) {
+            rebuildReminders();
+            return;
+        }
+
+        list.addView(rowView(getString(R.string.settings_auto),
+                getString(R.string.settings_auto_hint), selected == ROW_AUTO));
+        list.addView(rowView(getString(R.string.settings_manual),
+                getString(R.string.settings_manual_hint), selected == ROW_MANUAL));
+        boolean on = Prefs.reminders(this);
+        list.addView(rowView(getString(R.string.settings_reminders),
+                on ? getString(R.string.settings_on) : getString(R.string.settings_off),
+                selected == ROW_REMINDERS));
+        list.addView(rowView(getString(R.string.settings_copyright),
+                getString(R.string.settings_copyright_hint), selected == ROW_COPYRIGHT));
+    }
+
+    private void rebuildManual() {
+        list.removeAllViews();
+        loadZones();
+
+        // Back row
+        list.addView(rowView("← " + getString(R.string.settings_back), "", true));
+
+        // Negeri
+        list.addView(rowView(getString(R.string.settings_zone) + " · Negeri",
+                Zones.STATES[stateIdx], selected == 1));
+
+        // Zon
+        Zones.Zone zone = stateZones.get(zoneIdx);
+        list.addView(rowView(getString(R.string.settings_zone) + " · Zon",
+                zone.titled(), selected == 2));
+
+        // Save row
+        list.addView(rowView("✓ " + getString(R.string.settings_save), "", selected == 3));
+
+        // The zones of the chosen state
+        for (int i = 0; i < stateZones.size(); i++) {
+            Zones.Zone z = stateZones.get(i);
+            list.addView(zoneView(z, i, selected == 4 + i));
+        }
+    }
+
+    private void rebuildReminders() {
+        list.removeAllViews();
+        remOn = Prefs.reminders(this);
+        remMinutes = Prefs.reminderMinutes(this);
+        remNotify = Prefs.reminderNotify(this);
+
+        list.addView(rowView("← " + getString(R.string.settings_back), "", true));
+
+        list.addView(rowView(getString(R.string.settings_reminders),
+                remOn ? getString(R.string.settings_on) : getString(R.string.settings_off),
+                selected == 1));
+
+        list.addView(rowView(getString(R.string.settings_remind_before),
+                remMinutes + " minit", selected == 2));
+
+        String notifyLabel;
+        switch (remNotify) {
+            case "sound": notifyLabel = "Bunyi"; break;
+            case "vibrate": notifyLabel = "Getar"; break;
+            case "silent": notifyLabel = "Diam"; break;
+            default: notifyLabel = remNotify; break;
+        }
+        list.addView(rowView(getString(R.string.settings_notify),
+                notifyLabel, selected == 3));
+    }
+
     private void loadZones() {
         stateZones.clear();
         String state = Zones.STATES[stateIdx];
@@ -128,36 +199,7 @@ public class SettingsActivity extends Activity {
         }
     }
 
-    private void rebuild() {
-        list.removeAllViews();
-
-        // Lokasi automatik
-        list.addView(rowView(ROW_AUTO, getString(R.string.settings_auto),
-                getString(R.string.settings_auto_hint), selected == ROW_AUTO));
-
-        // Negeri
-        list.addView(rowView(ROW_STATE, getString(R.string.settings_zone) + " · Negeri",
-                Zones.STATES[stateIdx], selected == ROW_STATE));
-
-        // Zon
-        Zones.Zone zone = stateZones.get(zoneIdx);
-        list.addView(rowView(ROW_ZONE, getString(R.string.settings_zone) + " · Zon",
-                zone.titled(), selected == ROW_ZONE));
-
-        // Peringatan
-        boolean on = Prefs.reminders(this);
-        list.addView(rowView(ROW_REMINDERS, getString(R.string.settings_reminders),
-                on ? getString(R.string.settings_on) : getString(R.string.settings_off),
-                selected == ROW_REMINDERS));
-
-        // The zones of the chosen state, one row each
-        for (int i = 0; i < stateZones.size(); i++) {
-            Zones.Zone z = stateZones.get(i);
-            list.addView(zoneView(z, i, selected == ROW_FIRST_ZONE + i));
-        }
-    }
-
-    private LinearLayout rowView(int tag, String label, String value, boolean focused) {
+    private LinearLayout rowView(String label, String value, boolean focused) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.VERTICAL);
         row.setPadding(dp(20), dp(10), dp(20), dp(10));
@@ -166,9 +208,11 @@ public class SettingsActivity extends Activity {
         l.setLetterSpacing(0.1f);
         l.setText(label.toUpperCase(java.util.Locale.ROOT));
         row.addView(l);
-        TextView v = text(19, 500, focused ? 0xFFFFFFFF : 0xB3FFFFFF);
-        v.setText(value);
-        row.addView(v);
+        if (!value.isEmpty()) {
+            TextView v = text(19, 500, focused ? 0xFFFFFFFF : 0xB3FFFFFF);
+            v.setText(value);
+            row.addView(v);
+        }
         return row;
     }
 
@@ -198,8 +242,11 @@ public class SettingsActivity extends Activity {
     }
 
     private void move(int delta) {
-        int rows = ROW_FIRST_ZONE + stateZones.size();
-        selected = Math.max(ROW_AUTO, Math.min(rows - 1, selected + delta));
+        int rows;
+        if (manualOpen) rows = 4 + stateZones.size();
+        else if (remindersOpen) rows = 4;
+        else rows = 4;
+        selected = Math.max(0, Math.min(rows - 1, selected + delta));
         rebuild();
     }
 
@@ -213,16 +260,22 @@ public class SettingsActivity extends Activity {
                 move(1);
                 return true;
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                if (selected == ROW_STATE) {
+                if (manualOpen && selected == 1) {
                     stateIdx = (stateIdx - 1 + Zones.STATES.length) % Zones.STATES.length;
                     loadZones();
+                    rebuild();
+                } else if (manualOpen && selected == 2) {
+                    zoneIdx = (zoneIdx - 1 + stateZones.size()) % stateZones.size();
                     rebuild();
                 }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                if (selected == ROW_STATE) {
+                if (manualOpen && selected == 1) {
                     stateIdx = (stateIdx + 1) % Zones.STATES.length;
                     loadZones();
+                    rebuild();
+                } else if (manualOpen && selected == 2) {
+                    zoneIdx = (zoneIdx + 1) % stateZones.size();
                     rebuild();
                 }
                 return true;
@@ -230,31 +283,120 @@ public class SettingsActivity extends Activity {
             case KeyEvent.KEYCODE_ENTER:
                 activate();
                 return true;
+            case KeyEvent.KEYCODE_BACK:
+                if (manualOpen) {
+                    manualOpen = false;
+                    selected = ROW_MANUAL;
+                    rebuild();
+                    return true;
+                }
+                if (remindersOpen) {
+                    remindersOpen = false;
+                    selected = ROW_REMINDERS;
+                    rebuild();
+                    return true;
+                }
+                return super.onKeyDown(keyCode, event);
             default:
                 return super.onKeyDown(keyCode, event);
         }
     }
 
     private void activate() {
-        if (selected == ROW_AUTO) {
-            detect();
+        if (manualOpen) {
+            activateManual();
             return;
         }
-        if (selected == ROW_STATE) {
+        if (remindersOpen) {
+            activateReminders();
+            return;
+        }
+
+        switch (selected) {
+            case ROW_AUTO:
+                detect();
+                break;
+            case ROW_MANUAL:
+                manualOpen = true;
+                selected = 0;
+                loadZones();
+                rebuild();
+                break;
+            case ROW_REMINDERS:
+                remindersOpen = true;
+                selected = 0;
+                rebuild();
+                break;
+            case ROW_COPYRIGHT:
+                openCopyright();
+                break;
+        }
+    }
+
+    private void activateManual() {
+        if (selected == 0) {
+            manualOpen = false;
+            selected = ROW_MANUAL;
+            rebuild();
+            return;
+        }
+        if (selected == 1) {
             stateIdx = (stateIdx + 1) % Zones.STATES.length;
             loadZones();
-        } else if (selected == ROW_ZONE) {
-            zoneIdx = (zoneIdx + 1) % stateZones.size();
-        } else if (selected == ROW_REMINDERS) {
-            Prefs.setReminders(this, !Prefs.reminders(this));
-        } else {
-            int i = selected - ROW_FIRST_ZONE;
-            if (i >= 0 && i < stateZones.size()) {
-                zoneIdx = i;
-                apply(stateZones.get(i));
-            }
+            rebuild();
+            return;
         }
-        rebuild();
+        if (selected == 2) {
+            zoneIdx = (zoneIdx + 1) % stateZones.size();
+            rebuild();
+            return;
+        }
+        if (selected == 3) {
+            // Save
+            Zones.Zone z = stateZones.get(zoneIdx);
+            apply(z);
+            manualOpen = false;
+            selected = ROW_MANUAL;
+            rebuild();
+            return;
+        }
+        // A zone row
+        int i = selected - 4;
+        if (i >= 0 && i < stateZones.size()) {
+            zoneIdx = i;
+            rebuild();
+        }
+    }
+
+    private void activateReminders() {
+        if (selected == 0) {
+            remindersOpen = false;
+            selected = ROW_REMINDERS;
+            rebuild();
+            return;
+        }
+        if (selected == 1) {
+            Prefs.setReminders(this, !Prefs.reminders(this));
+            rebuild();
+            return;
+        }
+        if (selected == 2) {
+            remMinutes = (remMinutes + 5) % 65; // 0, 5, 10, ..., 60
+            Prefs.setReminderMinutes(this, remMinutes);
+            rebuild();
+            return;
+        }
+        if (selected == 3) {
+            String[] opts = {"sound", "vibrate", "silent"};
+            int idx = 0;
+            for (int i = 0; i < opts.length; i++) {
+                if (opts[i].equals(remNotify)) idx = i;
+            }
+            remNotify = opts[(idx + 1) % opts.length];
+            Prefs.setReminderNotify(this, remNotify);
+            rebuild();
+            return;
+        }
     }
 
     /** Saves the zone and shares it with the launcher (Home shows the same zone). */
@@ -263,14 +405,14 @@ public class SettingsActivity extends Activity {
         SharedPrefs.shareZone(this, z.mpt);
         if (Prefs.reminders(this)) Scheduler.scheduleNext(this);
         else Scheduler.cancel(this);
-        savedToast.setText(getString(R.string.settings_saved, z.jakim, z.desc.split(",")[0].trim()));
+        toast.setText(getString(R.string.settings_saved, z.jakim, z.desc.split(",")[0].trim()));
     }
 
     /** Lokasi automatik: the TV's IP is geocoded, the nearest zone is chosen. */
     private void detect() {
         if (detecting) return;
         detecting = true;
-        savedToast.setText(getString(R.string.settings_detecting));
+        toast.setText(getString(R.string.settings_detecting));
         new Thread(() -> {
             Zones.Zone best = null;
             try {
@@ -292,20 +434,11 @@ public class SettingsActivity extends Activity {
             runOnUiThread(() -> {
                 detecting = false;
                 if (found == null) {
-                    savedToast.setText(getString(R.string.settings_detect_failed));
+                    toast.setText(getString(R.string.settings_detect_failed));
                     return;
                 }
                 apply(found);
-                // Move the picker to what was detected, so manual still agrees.
-                for (int s = 0; s < Zones.STATES.length; s++) {
-                    if (Zones.STATES[s].equals(found.state)) stateIdx = s;
-                }
-                loadZones();
-                for (int i = 0; i < stateZones.size(); i++) {
-                    if (stateZones.get(i).mpt.equals(found.mpt)) zoneIdx = i;
-                }
-                rebuild();
-                savedToast.setText(getString(R.string.settings_detected, found.jakim,
+                toast.setText(getString(R.string.settings_detected, found.jakim,
                         found.desc.split(",")[0].trim()));
             });
         }).start();
@@ -314,6 +447,16 @@ public class SettingsActivity extends Activity {
     private static double dist2(double a1, double o1, double a2, double o2) {
         double dA = a1 - a2, dO = o1 - o2;
         return dA * dA + dO * dO;
+    }
+
+    private void openCopyright() {
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW,
+                    android.net.Uri.parse("https://github.com/rashidzainol"));
+            startActivity(i);
+        } catch (Exception e) {
+            toast.setText("github.com/rashidzainol");
+        }
     }
 
     private static String fetch(String url) throws Exception {
@@ -329,4 +472,6 @@ public class SettingsActivity extends Activity {
             c.disconnect();
         }
     }
+
+    private boolean detecting;
 }
